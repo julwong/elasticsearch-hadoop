@@ -537,6 +537,10 @@ public abstract class Settings {
         return Booleans.parseBoolean(getProperty(ES_SPARK_DATAFRAME_WRITE_NULL_VALUES, ES_SPARK_DATAFRAME_WRITE_NULL_VALUES_DEFAULT));
     }
 
+    public boolean getBatchWriteIgnoreError() {
+        return Booleans.parseBoolean(getProperty(ES_BATCH_WRITE_IGNORE_ERROR, ES_BATCH_WRITE_IGNORE_ERROR_DEFAULT));
+    }
+
     public abstract InputStream loadResource(String location);
 
     public abstract Settings copy();

@@ -247,7 +247,11 @@ public class RestRepository implements Closeable, StatsAware {
                 message.append("\t").append(errors).append("\n");
             }
             message.append("Bailing out...");
-            throw new EsHadoopException(message.toString());
+	    if (settings.getBatchWriteIgnoreError()) {
+	        log.error(message.toString());
+            } else { 
+                throw new EsHadoopException(message.toString());
+            }
         }
     }
 

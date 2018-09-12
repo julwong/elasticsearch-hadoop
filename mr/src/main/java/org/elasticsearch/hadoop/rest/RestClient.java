@@ -63,6 +63,8 @@ import static org.elasticsearch.hadoop.rest.Request.Method.HEAD;
 import static org.elasticsearch.hadoop.rest.Request.Method.POST;
 import static org.elasticsearch.hadoop.rest.Request.Method.PUT;
 
+import org.apache.commons.logging.LogFactory;
+
 public class RestClient implements Closeable, StatsAware {
 
     private final static int MAX_BULK_ERROR_MESSAGES = 5;
@@ -72,6 +74,7 @@ public class RestClient implements Closeable, StatsAware {
     private final TimeValue scrollKeepAlive;
     private final boolean indexReadMissingAsEmpty;
     private final HttpRetryPolicy retryPolicy;
+    private final boolean batchWriteIgnoreError;
     final EsMajorVersion internalVersion;
 
     {
@@ -105,6 +108,7 @@ public class RestClient implements Closeable, StatsAware {
         retryPolicy = ObjectUtils.instantiate(retryPolicyName, settings);
         // Assume that the elasticsearch major version is the latest if the version is not already present in the settings
         internalVersion = settings.getInternalVersionOrLatest();
+	batchWriteIgnoreError = settings.getBatchWriteIgnoreError();
     }
 
     public List<NodeInfo> getHttpNodes(boolean clientNodeOnly) {
@@ -233,7 +237,7 @@ public class RestClient implements Closeable, StatsAware {
 
                 String error = extractError(values);
                 if (error != null && !error.isEmpty()) {
-                    if ((status != null && HttpStatus.canRetry(status)) || error.contains("EsRejectedExecutionException")) {
+                    if ((status != null && HttpStatus.canRetry(status)) || error.contains("EsRejectedExecutionException") || batchWriteIgnoreError) {
                         entryToDeletePosition++;
                         if (errorMessagesSoFar < MAX_BULK_ERROR_MESSAGES) {
                             // We don't want to spam the log with the same error message 1000 times.
@@ -485,7 +489,11 @@ public class RestClient implements Closeable, StatsAware {
                         IOUtils.asStringAlways(response.body()));
             }
 
-            throw new EsHadoopInvalidRequest(msg);
+	    if (batchWriteIgnoreError) {
+	        LogFactory.getLog(RestClient.class).error(msg);
+            } else { 
+                throw new EsHadoopInvalidRequest(msg);
+            }
         }
     }
 

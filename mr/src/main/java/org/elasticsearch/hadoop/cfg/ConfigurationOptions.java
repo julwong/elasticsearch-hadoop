@@ -95,6 +95,9 @@ public interface ConfigurationOptions {
     String ES_BATCH_WRITE_RETRY_POLICY_SIMPLE = "simple";
     String ES_BATCH_WRITE_RETRY_POLICY_DEFAULT = ES_BATCH_WRITE_RETRY_POLICY_SIMPLE;
 
+    String ES_BATCH_WRITE_IGNORE_ERROR = "es.batch.write.ignore.error";
+    String ES_BATCH_WRITE_IGNORE_ERROR_DEFAULT = "false";
+
     /** HTTP connection timeout */
     String ES_HTTP_TIMEOUT = "es.http.timeout";
     String ES_HTTP_TIMEOUT_DEFAULT = "1m";
